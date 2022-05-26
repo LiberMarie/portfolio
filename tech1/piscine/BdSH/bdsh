@@ -1,0 +1,87 @@
+#!/bin/sh
+
+namedb=db.json
+mess_error="salut"
+declare -a nameColonne
+declare -a valueColonne
+syntax_error="Syntax error in command line (bad arguments, ...)"
+database_already_exist_error="Database already exist"
+Cant_create_db_error="Can't create database (disc full, ...)"
+Table_already_exist_error="Table already exist when create table"
+Table_not_found="Table not found when select, insert, ..."
+Fields_not_found="Fields not found when select, insert, ..."
+empty_database="Select on empty database"
+
+gestNameDB() {
+    namedb=$1
+    return 0
+}
+
+createDB(){
+    if [ -e $namedb ]
+    then
+        echo -e $database_already_exist_error
+        exit 1
+    else
+        touch $namedb
+        echo -e "{\n}" > $namedb
+        echo -e "creation de la db"
+        echo -e $namedb
+    fi
+}
+
+insert(){
+    table=$1
+    value=$2
+    valuetoinsert=""
+    taille=$(expr length $value)
+    echo -e $value
+    echo $2  | (tr ',=' '\n\n')
+   # $valuetoinsert = $($2  | (tr ',=' '\n\n'))
+    echo -e $valuetoinsert
+}
+
+
+if [ "$#" -eq 4 ] && [ "$1" == '-f' ] && [ "$3" == 'create' ] && [ "$4" == 'database' ]
+then
+    gestNameDB $2
+    createDB
+    exit 0
+elif [ "$#" -eq 6 ] && [ "$1" == '-f' ] && [ "$3" == 'create' ] && [ "$4" == 'table' ]
+then
+    gestNameDB $2
+    echo -e "create table"
+    exit 0
+elif [ "$#" -eq 5 ] && [ "$1" == '-f' ] && [ "$3" == 'insert' ]
+then
+    gestNameDB $2
+    insert $4 $5
+    echo "insert data in database"
+    exit 0
+elif [ "$#" -eq 4 ] && [ "$1" == '-f' ] && [ "$3" == 'describe' ]
+then
+    gestNameDB $2
+    echo "describe table"
+    exit 0
+elif [ "$#" -eq 5 ] && [ "$1" == '-f' ] && [ "$3" == 'select' ] && [ "$4" == 'user' ]
+then
+    gestNameDB $2
+    echo -e "display data from database"
+    exit 0
+elif [ "$#" -eq 6 ] && [ "$1" == '-f' ] && [ "$3" == 'select' ] && [ "$4" == 'user' ] && [ "$6" == 'order' ]
+then
+    gestNameDB $2
+    echo -e "display data from database WITH ORDER"
+    exit 0
+elif [ "$#" -eq 1 ] && [ "$1" == '-h' ]
+then
+    echo -e "Usage: ./bdsh [OPTION]... [COMMAND] [REQUEST]
+OPTION:
+\t-h\t\t\tdisplay usage
+\t-f FILE\t\t\tjson database file
+\t-j\t\t\tjson formated output for select command
+\t[COMMAND]\t\tcreate/insert/describe/select"
+    exit 0
+else
+    exit 1
+fi
